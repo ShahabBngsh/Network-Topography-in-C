@@ -8,11 +8,16 @@
 #include<sys/socket.h>
 #include<sys/time.h>
 #include<string>
+
+#include <iostream>
 using namespace std;
 
 #define MAXFD 5	//Size of fds array
+#define PORTNO 6000
+
 int id = 0;
 int tickarr[12]={0};
+
 void fds_add(int fds[],int fd)	//Add a file descriptor to the fds array
 {
 	int i=0;
@@ -25,20 +30,26 @@ void fds_add(int fds[],int fd)	//Add a file descriptor to the fds array
 }
 
 int main() {
+
 	int sockfd=socket(AF_INET,SOCK_STREAM,0);
 	string sndmsg = "Your ticket ID is: ";
-	assert(sockfd!=-1);
+	if (sockfd == -1) {
+		cout << "ERROR: socket\n";
+	}
 	
-    printf("sockfd=%d\n",sockfd);
+  printf("sockfd=%d\n",sockfd);
     
 	struct sockaddr_in saddr,caddr;
 	memset(&saddr,0,sizeof(saddr));
 	saddr.sin_family=AF_INET;
-	saddr.sin_port=htons(6000);
+	saddr.sin_port=htons(PORTNO);
 	saddr.sin_addr.s_addr=inet_addr("127.0.0.1");
 
 	int res=bind(sockfd,(struct sockaddr*)&saddr,sizeof(saddr));
-	assert(res!=-1);
+	if (res == -1) {
+		cout << "ERROR: bind\n";
+	}
+	
 	
 	//Create listening queue
 	listen(sockfd,12);
@@ -82,8 +93,8 @@ int main() {
 		struct timeval tv={5,0};	//Set timeout of 5 seconds
 
 		int n=select(maxfd+1,&fdset,NULL,NULL,&tv);//Selectect system call, where we only focus on read events
-		if(n==-1)	//fail
-		{
+		if(n==-1)	{ //fail
+		
 			perror("select error");
 		}
 		else if(n==0)//Timeout, meaning no file descriptor returned
@@ -110,16 +121,14 @@ int main() {
 						socklen_t len=sizeof(caddr);
 						//Accept new client connections
 						int c=accept(sockfd,(struct sockaddr *)&caddr, &len);
-						if(c<0)
-						{
+						if(c<0) {
 							continue;
 						}
 					
 						printf("accept c=%d\n",c);
 						fds_add(fds,c);//Add the connection socket to the array where the file descriptor is stored
 					}
-					else   //Receive data recv when an existing client sends data
-					{
+					else {  //Receive data recv when an existing client sends data
 						char buff[128]={0};
 						int res=recv(fds[i],buff,127,0);
 						if(res<=0)
