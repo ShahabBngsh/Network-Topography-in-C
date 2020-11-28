@@ -7,13 +7,9 @@ using namespace std;
 #define localhost "127.0.0.1"
 #define BUFFSIZE 127
 
-int id = 0;
-int tickarr[backlog]={0};
-
 //Add a file descriptor to the fds array
 void fds_init(int fds_arr[],int fd) {
-	int i=0;
-	for( ; i<MAXFD; ++i) {
+	for(int i=0; i<MAXFD; ++i) {
 		if(fds_arr[i]==-1) {
 			fds_arr[i]=fd;
 			break;
@@ -21,9 +17,9 @@ void fds_init(int fds_arr[],int fd) {
 	}
 }
 
-void checkError(const int& ret, const int& flag,  const string& text) {
+void checkError(const int& ret,const char* s) {
 	if(ret == -1) {
-		cout << "ERROR: " << text << " flag: " << flag;
+		perror(s);
 		exit(-1);
 	}
 }
@@ -37,7 +33,7 @@ int acceptClient(int sockfd) {
 int main() {
 
 	int sockfd=socket(AF_INET,SOCK_STREAM,0);
-	checkError(sockfd, errno, "socket\n");
+	checkError(sockfd, "Error socket");
   
 	struct sockaddr_in saddr,caddr;
 	memset(&saddr,0,sizeof(saddr));
@@ -46,7 +42,7 @@ int main() {
 	saddr.sin_addr.s_addr=inet_addr(localhost);
 
 	int res=bind(sockfd,(struct sockaddr*)&saddr,sizeof(saddr));
-	checkError(res, errno, "bind\n");
+	checkError(res, "Error bind");
 	
 	//Create listening queue
 	listen(sockfd, backlog);
@@ -93,7 +89,7 @@ int main() {
 		//Selectect system call, where we only focus on read events
 		int retval = select(maxfd+1, &readfds, &writefds, NULL,&tv);
 		if(retval == -1)	{ //fail
-			perror("ERROR: select()");
+			perror("Error select()");
 		}
 		else if(retval == 0) { //Timeout, meaning no file descriptor returned
 			printf("time out\n");

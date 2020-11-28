@@ -22,8 +22,7 @@ int main() {
 	int res = connect(sockfd,(struct sockaddr*)&saddr,sizeof(saddr));
 	assert(res != -1);
 
-	while(1)
-	{
+	while(1) {
 		char buff[128] = {0};
 		printf("Please Input:");
 		fgets(buff,128,stdin);
@@ -33,9 +32,9 @@ int main() {
 		}
 		send(sockfd,buff,strlen(buff),0);
 		memset(buff,0,128);
-		recv(sockfd,buff,127,0);
-		printf("RecvBuff:%s\n",buff);
-        printf("\n");
+		//recv(sockfd,buff,127,0);
+		// printf("RecvBuff:%s\n",buff);
+    // printf("\n");
 	}
 	close(sockfd);
 }
