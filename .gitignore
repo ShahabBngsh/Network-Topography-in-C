@@ -1,0 +1,12 @@
+#ignore all files in this directory
+.vscode/*
+
+#ignore everything
+*
+#but don't ignore these
+!.gitignore
+!Makefile
+!*.cpp
+!*.h
+!*.txt
+
