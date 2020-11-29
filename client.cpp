@@ -6,7 +6,8 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
-
+#include<iostream>
+using namespace std;
 int main() {
 	int sockfd = socket(AF_INET,SOCK_STREAM,0);	
 //	assert(sockfd != -1 );
@@ -25,11 +26,13 @@ int main() {
 	while(1) {
 		char buff[128] = {0};
 		printf("Please Input:");
-		fgets(buff,128,stdin);
+		cin.getline(buff,128,'\n');
+		// fgets(buff,128,stdin);
 		if(strncmp(buff,"end",3) ==0 )
 		{
 			break;
 		}
+		sendto(sockfd, buff, strlen(buff), 0, (struct sockaddr*)&saddr, sizeof(saddr)); 
 		send(sockfd,buff,strlen(buff),0);
 		memset(buff,0,128);
 		//recv(sockfd,buff,127,0);

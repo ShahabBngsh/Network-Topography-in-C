@@ -1,41 +1,74 @@
 #include "libraries.h"
+#include<cstdlib>
+#include<stdlib.h>
 using namespace std;
 
-#define MAXFD 4	//Size of fds array
+//#define MAXFD 6	//Size of fds array
 #define PORTNO 6000
 #define backlog 3
 #define localhost "127.0.0.1"
 #define BUFFSIZE 127
+struct RoutingTableRow{
+	string clientName="";
+	int client_PortNo=0;
+	int next_toGoFD=-1;
+	string next_serverName="";
 
-//Add a file descriptor to the fds array
-void fds_init(int fds_arr[],int fd) {
-	for(int i=0; i<MAXFD; ++i) {
-		if(fds_arr[i]==-1) {
-			fds_arr[i]=fd;
-			break;
+	void display(){
+		// printf("Clinet_PortNo: %d  NextServerName:%s  Next_toGoFd:%d\n",client_PortNo,next_serverName,next_toGoFD);
+		cout<<"ClientName: "<<clientName<<"  Clinet_PortNo: "<<client_PortNo<<"  NextServerName :"<<next_serverName<<"  Next_toGoFd: "<<next_toGoFD<<endl;
+	}
+
+};
+void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
+	// system("clear");
+	cout<<"***********************************************************\n";
+	int counter=0;
+	for(int it1=0;it1<routingtablecount;it1++){
+		if(routingTable[it1].client_PortNo!=0){
+			counter++;
+			// cout<<endl<<it1<<endl;
+			routingTable[it1].display();
 		}
 	}
+	// cout<<counter<<endl;
+	cout<<"***********************************************************\n";
 }
+//Add a file descriptor to the fds array
+// void fds_init(int fds_arr[],int fd) {
+// 	for(int i=0; i<MAXFD; ++i) {
+// 		if(fds_arr[i]==-1) {
+// 			fds_arr[i]=fd;
+// 			break;
+// 		}
+// 	}
+// }
 
-void checkError(const int& ret,const char* s) {
-	if(ret == -1) {
-		perror(s);
-		exit(-1);
-	}
-}
-int acceptClient(int sockfd) {
-	struct sockaddr_in caddr;
-	socklen_t len=sizeof(caddr);
-	//Accept new client connections
-	return accept(sockfd,(struct sockaddr *)&caddr, &len);
-}
+// void checkError(const int& ret,const char* s) {
+// 	if(ret == -1) {
+// 		perror(s);
+// 		exit(-1);
+// 	}
+// }
+// int acceptClient(int sockfd) {
+// 	struct sockaddr_in caddr;
+// 	socklen_t len=sizeof(caddr);
+// 	//Accept new client connections
+// 	return accept(sockfd,(struct sockaddr *)&caddr, &len);
+// }
+struct clientPorts{
+	int portNo=0;
+	bool available=true;
+};
 
 int main() {
-
+	RoutingTableRow routingTable[10];
+	clientPorts ports_array[10];
+	int routingTableCount=0;
 	int sockfd=socket(AF_INET,SOCK_STREAM,0);
 	checkError(sockfd, "Error socket");
-  
-	struct sockaddr_in saddr,caddr;
+  	struct sockaddr_storage client_addr2;
+	struct sockaddr_in saddr,caddr,client_addr, addr;
 	memset(&saddr,0,sizeof(saddr));
 	saddr.sin_family=AF_INET;
 	saddr.sin_port=htons(PORTNO);
@@ -105,24 +138,86 @@ int main() {
 					if(readfds_arr[i]==sockfd) {
 
 						//Accept new client connections
-						int retval = acceptClient(sockfd);
+						struct sockaddr_in caddr;
+						socklen_t len=sizeof(caddr);
+						//Accept new client connections
+						retval = accept(sockfd,(struct sockaddr *)&caddr, &len);
+
+						// int retval = acceptClient(sockfd);
 						if(retval < 0) {
 							continue;
 						} else if(retval > MAXFD+2) {
 							printf("WARNING: Server limit exceeded\nrequest declined!\n");
 							continue;
 						}
+						// printf("----------------------------------\n");
+						// printf("%s\n",inet_ntoa(caddr.sin_addr));
+						// printf("%d\n",(int)ntohs(caddr.sin_port));
+						// printf("----------------------------------\n");
+						ports_array[retval].portNo=(int)ntohs(caddr.sin_port);
+						// ports_array[retval].available=false;
 						printf("accept c=%d\n",retval);
 						fds_init(readfds_arr, retval);//Add the connection socket to the readfds_arr array
 					} else {  //Receive data recv when an existing client sends data
+						socklen_t len=100;
 						char buff[BUFFSIZE]={0};
+					// 	int res = recvfrom(readfds_arr[i], buff, BUFFSIZE, 0, (struct sockaddr*)&client_addr2,&len); //receive message from server 
+					// 	// int result = getpeername ( readfds_arr[i] , (struct sockaddr*) &addr , &len );
+					// 	printf("%d\n",readfds_arr[i]);
+					// 	// if(result==0){
+					// 	// 	printf("%s\n",inet_ntoa(addr.sin_addr));
+					// 	// 	printf("%d\n",(int)ntohs(addr.sin_port));
+					// 	// }
+					// 	printf("%s\n",inet_ntoa(client_addr.sin_addr));
+					// 	printf("%d\n",(int)ntohs(client_addr.sin_port));
+					// //	buf[n] = '\0'; 
+
 						int res=recv(readfds_arr[i],buff,BUFFSIZE,0);
 						if(res <= 0) {
 							close(readfds_arr[i]);
+							for(int it1=0;it1<routingTableCount;it1++){
+								if(routingTable[it1].client_PortNo==ports_array[readfds_arr[i]].portNo){
+									routingTable[it1].client_PortNo=0;
+									ports_array[readfds_arr[i]].portNo=0;
+									ports_array[readfds_arr[i]].available=true;
+									displayRoutingTable(routingTable,routingTableCount);
+									// routingTable[it1].display();
+									break;
+								}
+							}
 							readfds_arr[i]=-1;
+
 							printf("client disconnected!\n");
 						} else {
-							printf("recv(%d)=%s\n", readfds_arr[i], buff);	//Output Client Sent Information
+							// printf("recv(%d)=%s\n", readfds_arr[i], buff);	//Output Client Sent Information
+							string str=string(buff);
+							// char newEntry[100]="New entry";
+							
+							if(buff[0]=='.'){
+								if(ports_array[readfds_arr[i]].available){
+								string str2="self";
+								// printf("recv(%d)=%s\n", readfds_arr[i], buff);	//Output Client Sent Information
+								// printf("%s\n",newEntry);
+								// printf("%d\n",((int)ntohs(client_addr.sin_port)));
+								// routingTable[routingTableCount].client_PortNo=((int)ntohs(client_addr.sin_port));
+								string substr=str.substr(1,6);
+								routingTable[routingTableCount].clientName.replace(0,5,substr);
+								routingTable[routingTableCount].client_PortNo=ports_array[readfds_arr[i]].portNo;
+								ports_array[readfds_arr[i]].available=false;
+								routingTable[routingTableCount].next_serverName.replace(0,5,str2);
+								routingTable[routingTableCount].next_toGoFD=readfds_arr[i];
+								// routingTable[routingTableCount].display();
+								routingTableCount++;
+								displayRoutingTable(routingTable,routingTableCount);									
+								}
+								else{
+									printf("client msg: %s\n",buff);									
+								}
+							}
+							else{
+								printf("client msg: %s\n",buff);
+							}
+
 							//send(readfds_arr[i],"",0,0);
 							
 						}

@@ -15,7 +15,7 @@
 #define localhost "127.0.0.1"
 #define MSPORTNO 7000
 #define backlog 3
-#define MAXFD 4	//Size of fds array
+#define MAXFD 6	//Size of fds array
 #define BUFFSIZE 127
 
 
