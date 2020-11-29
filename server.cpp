@@ -19,7 +19,6 @@ struct RoutingTableRow{
 		// printf("Clinet_PortNo: %d  NextServerName:%s  Next_toGoFd:%d\n",client_PortNo,next_serverName,next_toGoFD);
 		cout<<"ClientName: "<<clientName<<"  Clinet_PortNo: "<<client_PortNo<<"  NextServerName :"<<next_serverName<<"  Next_toGoFd: "<<next_toGoFD<<endl;
 	}
-
 };
 void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
 	// system("clear");
@@ -86,7 +85,7 @@ int main() {
 //..........CONNECTION REQUEST WITH SERVER3 CODE (ENDS).......... 
 
 
-//.......DEFINING OWN ADRESS AND OPENING SOCK FOR CONNECTION REQUESTS (STARTS).................
+//.......DEFINING OWN ADRESS AND OPENING SOCK TO ACCEPT CONNECTION REQUESTS (STARTS).................
 
 	int requestListenFD=socket(AF_INET,SOCK_STREAM,0);
 	struct sockaddr_in saddr;
@@ -101,7 +100,7 @@ int main() {
 	//Create listening queue
 	listen(requestListenFD, backlog);
 
-//.......DEFINING OWN ADRESS AND OPENING SOCK FOR CONNECTION REQUESTS (ENDS).................	
+//.......DEFINING OWN ADRESS AND OPENING SOCK TO ACCEPT CONNECTION REQUESTS (ENDS).................	
 
 
 	//Define fdset collection
@@ -202,6 +201,10 @@ int main() {
 							close(readfds_arr[i]);
 							for(int it1=0;it1<routingTableCount;it1++){
 								if(routingTable[it1].client_PortNo==ports_array[readfds_arr[i]].portNo){
+									string deleteMsg="--	"+to_string(routingTable[it1].client_PortNo);
+									char todelete[deleteMsg.size()+1];
+									strcpy(todelete,deleteMsg.c_str());
+									send(forServer3sockfd,todelete,sizeof(todelete),0);
 									routingTable[it1].client_PortNo=0;
 									ports_array[readfds_arr[i]].portNo=0;
 									ports_array[readfds_arr[i]].available=true;
@@ -210,6 +213,7 @@ int main() {
 									break;
 								}
 							}
+
 							readfds_arr[i]=-1;
 
 							printf("client disconnected!\n");
@@ -232,8 +236,14 @@ int main() {
 								routingTable[routingTableCount].next_serverName.replace(0,5,str2);
 								routingTable[routingTableCount].next_toGoFD=readfds_arr[i];
 								// routingTable[routingTableCount].display();
-								routingTableCount++;
-								displayRoutingTable(routingTable,routingTableCount);									
+								string tosend="-	"+routingTable[routingTableCount].clientName+"	"+to_string(routingTable[routingTableCount].client_PortNo)+"	server1";
+								// char msg[tosend.size()+1]="-	usama	12345	server1";
+								char msg[tosend.size()+1];
+								strcpy(msg,tosend.c_str());
+								send(forServer3sockfd,msg,sizeof(msg),0);	
+								routingTableCount++;								
+								displayRoutingTable(routingTable,routingTableCount);
+
 								}
 								else{
 									printf("client msg: %s\n",buff);									
