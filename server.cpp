@@ -1,6 +1,7 @@
 #include "libraries.h"
 #include<cstdlib>
 #include<stdlib.h>
+#include<assert.h>
 using namespace std;
 
 //#define MAXFD 6	//Size of fds array
@@ -18,7 +19,6 @@ struct RoutingTableRow{
 		// printf("Clinet_PortNo: %d  NextServerName:%s  Next_toGoFd:%d\n",client_PortNo,next_serverName,next_toGoFD);
 		cout<<"ClientName: "<<clientName<<"  Clinet_PortNo: "<<client_PortNo<<"  NextServerName :"<<next_serverName<<"  Next_toGoFd: "<<next_toGoFD<<endl;
 	}
-
 };
 void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
 	// system("clear");
@@ -50,11 +50,11 @@ void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
 // 		exit(-1);
 // 	}
 // }
-// int acceptClient(int sockfd) {
+// int acceptClient(int requestListenFD) {
 // 	struct sockaddr_in caddr;
 // 	socklen_t len=sizeof(caddr);
 // 	//Accept new client connections
-// 	return accept(sockfd,(struct sockaddr *)&caddr, &len);
+// 	return accept(requestListenFD,(struct sockaddr *)&caddr, &len);
 // }
 struct clientPorts{
 	int portNo=0;
@@ -65,20 +65,44 @@ int main() {
 	RoutingTableRow routingTable[10];
 	clientPorts ports_array[10];
 	int routingTableCount=0;
-	int sockfd=socket(AF_INET,SOCK_STREAM,0);
-	checkError(sockfd, "Error socket");
-  	struct sockaddr_storage client_addr2;
-	struct sockaddr_in saddr,caddr,client_addr, addr;
+
+
+//..........CONNECTION REQUEST WITH SERVER3 CODE (STARTS).......... 
+
+	int forServer3sockfd=socket(AF_INET,SOCK_STREAM,0);
+	checkError(forServer3sockfd, "Error socket");
+
+
+    struct sockaddr_in server3_addr;
+	memset(&server3_addr,0,sizeof(server3_addr));
+	server3_addr.sin_family = AF_INET;
+	server3_addr.sin_port = htons(10000);
+	server3_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+	int res1 = connect(forServer3sockfd,(struct sockaddr*)&server3_addr,sizeof(server3_addr));
+    // assert(res1 != -1);
+
+//..........CONNECTION REQUEST WITH SERVER3 CODE (ENDS).......... 
+
+
+//.......DEFINING OWN ADRESS AND OPENING SOCK TO ACCEPT CONNECTION REQUESTS (STARTS).................
+
+	int requestListenFD=socket(AF_INET,SOCK_STREAM,0);
+	struct sockaddr_in saddr;
 	memset(&saddr,0,sizeof(saddr));
 	saddr.sin_family=AF_INET;
 	saddr.sin_port=htons(PORTNO);
 	saddr.sin_addr.s_addr=inet_addr(localhost);
 
-	int res=bind(sockfd,(struct sockaddr*)&saddr,sizeof(saddr));
-	checkError(res, "Error bind");
+	int res2=bind(requestListenFD,(struct sockaddr*)&saddr,sizeof(saddr));
+	checkError(res2, "Error bind");
 	
 	//Create listening queue
-	listen(sockfd, backlog);
+	listen(requestListenFD, backlog);
+
+//.......DEFINING OWN ADRESS AND OPENING SOCK TO ACCEPT CONNECTION REQUESTS (ENDS).................	
+
+
 	//Define fdset collection
 	fd_set readfds, writefds;
 	
@@ -90,8 +114,8 @@ int main() {
 	}
 	
 	//Add a file descriptor to the fds array
-  fds_init(readfds_arr,  sockfd);
-	fds_init(writefds_arr, sockfd);
+  fds_init(readfds_arr,  requestListenFD);
+	fds_init(writefds_arr, requestListenFD);
 
 	while(1) {
 		FD_ZERO(&readfds);//Clear the readfds array to 0
@@ -135,15 +159,15 @@ int main() {
 				}//Determine if the event corresponding to the file descriptor is ready
 				if(FD_ISSET(readfds_arr[i], &readfds)) {
 					//accept if a new client requests a connection
-					if(readfds_arr[i]==sockfd) {
+					if(readfds_arr[i]==requestListenFD) {
 
 						//Accept new client connections
 						struct sockaddr_in caddr;
 						socklen_t len=sizeof(caddr);
 						//Accept new client connections
-						retval = accept(sockfd,(struct sockaddr *)&caddr, &len);
+						retval = accept(requestListenFD,(struct sockaddr *)&caddr, &len);
 
-						// int retval = acceptClient(sockfd);
+						// int retval = acceptClient(requestListenFD);
 						if(retval < 0) {
 							continue;
 						} else if(retval > MAXFD+2) {
@@ -177,6 +201,10 @@ int main() {
 							close(readfds_arr[i]);
 							for(int it1=0;it1<routingTableCount;it1++){
 								if(routingTable[it1].client_PortNo==ports_array[readfds_arr[i]].portNo){
+									string deleteMsg="--	"+to_string(routingTable[it1].client_PortNo);
+									char todelete[deleteMsg.size()+1];
+									strcpy(todelete,deleteMsg.c_str());
+									send(forServer3sockfd,todelete,sizeof(todelete),0);
 									routingTable[it1].client_PortNo=0;
 									ports_array[readfds_arr[i]].portNo=0;
 									ports_array[readfds_arr[i]].available=true;
@@ -185,6 +213,7 @@ int main() {
 									break;
 								}
 							}
+
 							readfds_arr[i]=-1;
 
 							printf("client disconnected!\n");
@@ -207,8 +236,14 @@ int main() {
 								routingTable[routingTableCount].next_serverName.replace(0,5,str2);
 								routingTable[routingTableCount].next_toGoFD=readfds_arr[i];
 								// routingTable[routingTableCount].display();
-								routingTableCount++;
-								displayRoutingTable(routingTable,routingTableCount);									
+								string tosend="-	"+routingTable[routingTableCount].clientName+"	"+to_string(routingTable[routingTableCount].client_PortNo)+"	server1";
+								// char msg[tosend.size()+1]="-	usama	12345	server1";
+								char msg[tosend.size()+1];
+								strcpy(msg,tosend.c_str());
+								send(forServer3sockfd,msg,sizeof(msg),0);	
+								routingTableCount++;								
+								displayRoutingTable(routingTable,routingTableCount);
+
 								}
 								else{
 									printf("client msg: %s\n",buff);									
@@ -231,9 +266,9 @@ int main() {
 				}//Determine if the event corresponding to the file descriptor is ready
 				if(FD_ISSET(writefds_arr[i], &writefds)) {
 					//accept if a new client requests a connection
-					if(writefds_arr[i]==sockfd) {
+					if(writefds_arr[i]==requestListenFD) {
 						//Accept new client connections
-						int retval = acceptClient(sockfd);
+						int retval = acceptClient(requestListenFD);
 						if(retval < 0) {
 							continue;
 						}
