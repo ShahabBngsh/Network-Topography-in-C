@@ -27,7 +27,7 @@ void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
 	for(int it1=0;it1<routingtablecount;it1++){
 		if(routingTable[it1].client_PortNo!=0){
 			counter++;
-			// cout<<endl<<it1<<endl;
+			// cout<<endl<<it1<<endl;disconnected!
 			routingTable[it1].display();
 		}
 	}
@@ -160,7 +160,7 @@ int main() {
 					continue;
 				}//Determine if the event corresponding to the file descriptor is ready
 				if(FD_ISSET(readfds_arr[i], &readfds)) {
-					// cout<<"Entering Is set\n";
+					cout<<"Entering Is set\n";
 					//accept if a new client requests a connection
 					if(readfds_arr[i]==requestListenFD) {
 
@@ -181,7 +181,7 @@ int main() {
 						// printf("%s\n",inet_ntoa(caddr.sin_addr));
 						// printf("%d\n",(int)ntohs(caddr.sin_port));
 						// printf("----------------------------------\n");
-						// ports_array[retval].portNo=(int)ntohs(caddr.sin_port);
+						ports_array[retval].portNo=(int)ntohs(caddr.sin_port);
 						// ports_array[retval].available=false;
 						printf("accept c=%d\n",retval);
 						fds_init(readfds_arr, retval);//Add the connection socket to the readfds_arr array
@@ -200,7 +200,7 @@ int main() {
 					// //	buf[n] = '\0'; 
 
 						int res=recv(readfds_arr[i],buff,BUFFSIZE,0);
-						// cout<<buff<<endl;
+						cout<<buff<<endl;
 						if(res <= 0) {
 							close(readfds_arr[i]);
 							for(int it1=0;it1<routingTableCount;it1++){
@@ -261,7 +261,7 @@ int main() {
 								{
 									tokken_array[tokken_array_count]=string(token);
 									tokken_array_count++;
-									// printf("%s\n", token); 
+									printf("%s\n", token); 
 									token = strtok(NULL, "\t"); 
 								}
 								routingTable[routingTableCount].clientName.replace(0,tokken_array[1].size()-1,tokken_array[1]);
@@ -280,7 +280,7 @@ int main() {
 								{
 									tokken_array[tokken_array_count]=string(token);
 									tokken_array_count++;
-									// printf("%s\n", token); 
+									printf("%s\n", token); 
 									token = strtok(NULL, "\t"); 
 								}
 								int toDeletePortNo=stoi(tokken_array[1]);

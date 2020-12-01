@@ -27,7 +27,7 @@ void displayRoutingTable(RoutingTableRow* routingTable,int routingtablecount){
 	for(int it1=0;it1<routingtablecount;it1++){
 		if(routingTable[it1].client_PortNo!=0){
 			counter++;
-			// cout<<endl<<it1<<endl;
+			// cout<<endl<<it1<<endl;disconnected!
 			routingTable[it1].display();
 		}
 	}
@@ -247,7 +247,6 @@ int main() {
 								send(forServer3sockfd,msg,sizeof(msg),0);	
 								routingTableCount++;								
 								displayRoutingTable(routingTable,routingTableCount);
-
 								}
 								else{
 									printf("client msg: %s\n",buff);									
