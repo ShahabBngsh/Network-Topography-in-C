@@ -160,7 +160,7 @@ int main() {
 					continue;
 				}//Determine if the event corresponding to the file descriptor is ready
 				if(FD_ISSET(readfds_arr[i], &readfds)) {
-					cout<<"Entering Is set\n";
+					// cout<<"Entering Is set\n";
 					//accept if a new client requests a connection
 					if(readfds_arr[i]==requestListenFD) {
 
@@ -200,7 +200,7 @@ int main() {
 					// //	buf[n] = '\0'; 
 
 						int res=recv(readfds_arr[i],buff,BUFFSIZE,0);
-						cout<<buff<<endl;
+						// cout<<buff<<endl;
 						if(res <= 0) {
 							close(readfds_arr[i]);
 							for(int it1=0;it1<routingTableCount;it1++){
@@ -233,8 +233,8 @@ int main() {
 								// printf("%s\n",newEntry);
 								// printf("%d\n",((int)ntohs(client_addr.sin_port)));
 								// routingTable[routingTableCount].client_PortNo=((int)ntohs(client_addr.sin_port));
-								string substr=str.substr(1,6);
-								routingTable[routingTableCount].clientName.replace(0,5,substr);
+								string substr=str.substr(1,str.size()-1);
+								routingTable[routingTableCount].clientName.replace(0,substr.size()-1,substr);
 								routingTable[routingTableCount].client_PortNo=ports_array[readfds_arr[i]].portNo;
 								ports_array[readfds_arr[i]].available=false;
 								routingTable[routingTableCount].next_serverName.replace(0,5,str2);
@@ -294,7 +294,29 @@ int main() {
 
 							}
 							else{
-								printf("client msg: %s\n",buff);
+								// printf("client msg: %s\n",buff);
+								// printf("client msg: %s\n",buff);
+								char buffTemp[BUFFSIZE];
+								strcpy(buffTemp,buff);
+								char *token = strtok(buffTemp, "\t"); 
+								string tokken_array[3];
+								int tokken_array_count=0;
+								while (token != NULL) 
+								{
+									tokken_array[tokken_array_count]=string(token);
+									tokken_array_count++;
+									// printf("%s\n", token); 
+									token = strtok(NULL, "\t"); 
+								}	
+								for(int it1=0;it1<routingTableCount;it1++){
+									if(routingTable[it1].client_PortNo==0){
+										continue;
+									}
+									if(routingTable[it1].clientName==tokken_array[1]){
+										// cout<<routingTable[it1].clientName<<"    "<<tokken_array[1]<<endl<<endl;
+										send(routingTable[it1].next_toGoFD,buff,sizeof(buff),0);
+									}
+								}
 							}
 
 							//send(readfds_arr[i],"",0,0);

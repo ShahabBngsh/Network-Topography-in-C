@@ -198,7 +198,31 @@ int main() {
 									}
 								}
 								displayRoutingTable(routingTable,routingTableCount);
-
+							}
+							else{
+								// cout<<buff<<endl;
+								// printf("client msg: %s\n",buff);
+								char buffTemp[BUFFSIZE];
+								strcpy(buffTemp,buff);
+								char *token = strtok(buffTemp, "\t"); 
+								string tokken_array[3];
+								int tokken_array_count=0;
+								while (token != NULL) 
+								{
+									tokken_array[tokken_array_count]=string(token);
+									tokken_array_count++;
+									// printf("%s\n", token); 
+									token = strtok(NULL, "\t"); 
+								}	
+								for(int it1=0;it1<routingTableCount;it1++){
+									if(routingTable[it1].client_PortNo==0){
+										continue;
+									}
+									if(routingTable[it1].clientName==tokken_array[1]){
+										// cout<<routingTable[it1].clientName<<"    "<<tokken_array[1]<<endl<<endl;
+										send(routingTable[it1].next_toGoFD,buff,sizeof(buff),0);
+									}
+								}
 							}
               // send(readfds_arr[i],"",0,0);
 							//sendto(sockfd, message, MAXLINE, 0, (struct sockaddr*)&servaddr, sizeof(servaddr)); 
