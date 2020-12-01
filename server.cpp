@@ -114,7 +114,7 @@ int main() {
 	}
 	
 	//Add a file descriptor to the fds array
-  fds_init(readfds_arr,  requestListenFD);
+	fds_init(readfds_arr,  requestListenFD);
 	fds_init(writefds_arr, requestListenFD);
 
 	while(1) {

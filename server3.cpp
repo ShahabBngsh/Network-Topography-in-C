@@ -1,4 +1,6 @@
 #include "libraries.h"
+#include<cstdlib>
+#include<stdlib.h>
 using namespace std;
 
 #define PORTNO 10000
@@ -105,18 +107,18 @@ int main() {
 							continue;
 						}
 
-            //..........Hardcoding the fds of servers connecting to this server(STARTS)........        
-                        cout<<(int)ntohs(caddr.sin_port)<<endl;
-						if(((int)ntohs(caddr.sin_port))==6000){
-                            server1FD=retval;
-                        }
-                        else if((int)ntohs(caddr.sin_port)==7000){
-                            server2FD=retval;
-                        }
-                        else if((int)ntohs(caddr.sin_port)==8000){
-                            server4FD=retval;
-                        }
-            //..........Hardcoding the fds of servers connecting to this server(ENDS)........ 
+            // //..........Hardcoding the fds of servers connecting to this server(STARTS)........        
+            //             cout<<(int)ntohs(caddr.sin_port)<<endl;
+			// 			if(((int)ntohs(caddr.sin_port))==6000){
+            //                 server1FD=retval;
+            //             }
+            //             else if((int)ntohs(caddr.sin_port)==7000){
+            //                 server2FD=retval;
+            //             }
+            //             else if((int)ntohs(caddr.sin_port)==8000){
+            //                 server4FD=retval;
+            //             }
+            // //..........Hardcoding the fds of servers connecting to this server(ENDS)........ 
 
 						printf("accept c=%d\n",retval);
 						fds_init(readfds_arr, retval);//Add the connection socket to the readfds_arr array
@@ -128,7 +130,7 @@ int main() {
 							readfds_arr[i]=-1;
 							printf("client disconnected!\n");
 						} else {
-							printf("recv(%d)=%s\n", readfds_arr[i], buff);	//Output Client Sent Information
+							// printf("recv(%d)=%s\n", readfds_arr[i], buff);	//Output Client Sent Information
 						 							
                             if(buff[0]=='-'&&buff[1]=='\t'){
 			//...........Tokenizing char array to extract name and port number of client(STARTS).........
@@ -139,10 +141,10 @@ int main() {
 								{
 									tokken_array[tokken_array_count]=string(token);
 									tokken_array_count++;
-									printf("%s\n", token); 
+									// printf("%s\n", token); 
 									token = strtok(NULL, "\t"); 
 								}
-								cout<<server1FD<<"   "<<readfds_arr[i]<<endl;
+								// cout<<server1FD<<"   "<<readfds_arr[i]<<endl;
 								// cout<<tokken_array[0]<<"   "<<tokken_array[0].size()<<""<<tokken_array[2]<<"   "<<tokken_array[2].size()<<endl;
 			//...........Tokenizing char array to extract name and port number of client(ENDS).........
 			                    // if(readfds_arr[i]==server1FD){//If data is new client data is coming from server 1
@@ -150,12 +152,34 @@ int main() {
 									routingTable[routingTableCount].client_PortNo=stoi(tokken_array[2]);
 									routingTable[routingTableCount].next_serverName.replace(0,tokken_array[3].size()-1,tokken_array[3]);
 									routingTable[routingTableCount].next_toGoFD=readfds_arr[i];
-									routingTable[routingTableCount].display();
+									for(int it1=0;it1<MAXFD;it1++){
+										if(it1==i||readfds_arr[it1]==-1||readfds_arr[it1]==requestListenFD){
+											// cout<<readfds_arr[it1]<<"    ";
+											continue;
+										}
+										// cout<<endl<<readfds_arr[it1]<<endl;
+										// for(int it2=0;buff[it2]!='\0';it2++){
+										// 	cout<<buff[it2];
+										// }
+										// cout<<endl;
+										string tosend2 = "-\t"+routingTable[routingTableCount].clientName+"\t"+tokken_array[2]+"\t"+tokken_array[3];
+										char buff2[127];
+										strcpy(buff2,tosend2.c_str());
+										send(readfds_arr[it1],buff2,sizeof(buff2),0);
+									}
+									// routingTable[routingTableCount].display();
 									routingTableCount++;
 									displayRoutingTable(routingTable,routingTableCount);
                                 // }
                             }
 							else if(buff[0]=='-'&&buff[1]=='-'){
+								for(int it1=0;it1<MAXFD;it1++){
+								if(it1==i||readfds_arr[it1]==-1||readfds_arr[it1]==requestListenFD){
+									// cout<<readfds_arr[it1]<<"    ";
+									continue;
+								}
+								send(readfds_arr[it1],buff,sizeof(buff),0);
+								}
 								char *token = strtok(buff, "\t"); 
 								string tokken_array[2];
 								int tokken_array_count=0;
@@ -163,7 +187,7 @@ int main() {
 								{
 									tokken_array[tokken_array_count]=string(token);
 									tokken_array_count++;
-									printf("%s\n", token); 
+									// printf("%s\n", token); 
 									token = strtok(NULL, "\t"); 
 								}
 								int toDeletePortNo=stoi(tokken_array[1]);

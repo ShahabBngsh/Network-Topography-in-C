@@ -16,7 +16,7 @@ int main() {
 	struct sockaddr_in saddr;
 	memset(&saddr,0,sizeof(saddr));
 	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(6000);
+	saddr.sin_port = htons(7000);
 	saddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	//Link to server
