@@ -55,7 +55,7 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
 						tokCounter++;
 						token = strtok(NULL, "\t"); 
 					}
-					cout<<"Received Messege: "<<tokens[2]<<endl;
+					cout << tokens[0] << "> " << tokens[2] << endl;
 				}
 			}
 		
@@ -64,13 +64,13 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
 
 int main() {
 	char buff[BUFFSIZE] = {'\0'};
-	int sockfd = connectSock2Port(localhost, S4PORTNO);
+	string cName = ".c2";
 
+	int sockfd = connectSock2Port(localhost, S2PORTNO);
 
+	string firstMsg = cName;
+	sendto(sockfd, firstMsg.c_str(), firstMsg.length(), 0, 0, 0);
 
-	char firstNewClinetMsg[20]=".client2";
-	sendto(sockfd, firstNewClinetMsg, strlen(firstNewClinetMsg), 0, 0, 0);
-	
 	fd_set readfds_set;
 	//Define fds array
 	int readfds_arr[MAXFD_C];
@@ -86,10 +86,10 @@ int main() {
       //sleep(1);
     }
 		read(STDIN_FILENO, buff, sizeof(buff));
-		string str = buff;
-		str = "client2\tclient4\t" + string(buff);
+		string str = cName.substr(1, 2);
+		str += '\t' + string(buff);
 		send(sockfd, str.c_str(), str.length(), 0);
-		memset(buff,0,BUFFSIZE);
+		memset(buff, 0, BUFFSIZE);
 	}
 	close(sockfd);
 }

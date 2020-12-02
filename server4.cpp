@@ -122,6 +122,7 @@ int main() {
 								else{
 									printf("client msg: %s\n",buff);									
 								}
+								//when other server wants to tell  that it have new client
 							} else if(buff[0]=='-' && buff[1] == '\t') {
 								char *token = strtok(buff, "\t"); 
 								string tokArr[4];
@@ -158,7 +159,7 @@ int main() {
 									}
 								}
 								dispRT(rt,rtCounter);
-							} else {
+							} else {//client 2 client communication
 								char buffTemp[BUFFSIZE];
 								strcpy(buffTemp,buff);
 								char *token = strtok(buffTemp, "\t"); 
@@ -168,15 +169,30 @@ int main() {
 									tokArr[tokArrCount] = string(token);
 									tokArrCount++;
 									token = strtok(NULL, "\t"); 
-								}	
+								}
+								bool isConnected = false;
 								for(int it1 = 0; it1 < rtCounter; it1++) {
 									if(rt[it1].cPortNo == 0) {
 										continue;
 									}
 									if(rt[it1].cName == tokArr[1]) {
-										send(rt[it1].nextFD,buff,sizeof(buff),0);
+										send(rt[it1].nextFD, buff, sizeof(buff),0);
+										isConnected = true;
 									}
 								}
+								if (!isConnected) {
+									for(int it1 = 0; it1 < rtCounter; it1++) {
+										if(rt[it1].cPortNo == 0) {
+											continue;
+										}
+										if(rt[it1].cName == tokArr[0]) {
+											string str = string(rt[it1].cName) + "\t"
+												+ string(tokArr[1]) + "\t" + "client not found";
+											send(rt[it1].nextFD, str.c_str(), str.length(), 0);
+										}
+									}
+								}
+								
 							}
 							
 						}

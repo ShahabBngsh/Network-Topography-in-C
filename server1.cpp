@@ -83,7 +83,6 @@ int main() {
 							close(readfds_arr[i]);
 							for(int it1=0; it1<rtCounter; it1++){
 								if(rt[it1].cPortNo == cPortArr[readfds_arr[i]].portNo){
-									//xxxxxxxxxxxxxxxxxxxxxxxxxxx can be simplified xxxxxxxxxxxxxxxxxxxxx
 									string delMsg = "--	" + to_string(rt[it1].cPortNo);
 									char todelete[delMsg.size()+1];
 									strcpy(todelete, delMsg.c_str());
@@ -171,12 +170,26 @@ int main() {
 									tokArrCount++;
 									token = strtok(NULL, "\t"); 
 								}	
+								bool isConnected = false;
 								for(int it1 = 0; it1 < rtCounter; it1++) {
 									if(rt[it1].cPortNo == 0) {
 										continue;
 									}
 									if(rt[it1].cName == tokArr[1]) {
-										send(rt[it1].nextFD,buff,sizeof(buff),0);
+										send(rt[it1].nextFD, buff, sizeof(buff),0);
+										isConnected = true;
+									}
+								}
+								if (!isConnected) {
+									for(int it1 = 0; it1 < rtCounter; it1++) {
+										if(rt[it1].cPortNo == 0) {
+											continue;
+										}
+										if(rt[it1].cName == tokArr[0]) {
+											string str = string(rt[it1].cName) + "\t"
+												+ string(tokArr[1]) + "\t" + "client not found";
+											send(rt[it1].nextFD, str.c_str(), str.length(), 0);
+										}
 									}
 								}
 							}
