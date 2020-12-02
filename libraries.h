@@ -24,6 +24,10 @@
 
 #define backlog 5
 #define MAXFD 10	//Size of fds array
+// maxfd for clients, as client only connect with
+//its dedicated server that's why value is 1
+# define MAXFD_C 1 
 #define BUFFSIZE 127
+#define uSec 500000 //microseconds used in timeval struct; 1sec = 1000000 usec
 
 #endif

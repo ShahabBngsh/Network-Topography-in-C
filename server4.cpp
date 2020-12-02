@@ -14,13 +14,12 @@ int main() {
 	int sockfd_forS3 = connectSock2Port(localhost, S3PORTNO);
 
 	//Define fdset collection
-	fd_set readfds, writefds;
+	fd_set readfds;
 	
 	//Define fds array
-	int readfds_arr[MAXFD], writefds_arr[MAXFD];
+	int readfds_arr[MAXFD];
 	for(int i=0; i<MAXFD; ++i) {
 		readfds_arr[i]  = -1;
-		writefds_arr[i] = -1;
 	}
 	
 	//Add a file descriptor to the fds array
@@ -83,7 +82,6 @@ int main() {
 							close(readfds_arr[i]);
 							for(int it1=0; it1<rtCounter; it1++){
 								if(rt[it1].cPortNo == cPortArr[readfds_arr[i]].portNo){
-									//xxxxxxxxxxxxxxxxxxxxxxxxxxx can be simplified xxxxxxxxxxxxxxxxxxxxx
 									string delMsg = "--	" + to_string(rt[it1].cPortNo);
 									char todelete[delMsg.size()+1];
 									strcpy(todelete, delMsg.c_str());

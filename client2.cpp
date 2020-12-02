@@ -1,51 +1,95 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<cstring>
-#include<assert.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<iostream>
+#include "libraries.h"
+#include "RoutingTable.h"
 using namespace std;
+
+/*THANKS to jwhitlock from
+https://stackoverflow.com/questions/717572/how-do-you-do-non-blocking-console-i-o-on-linux-in-c
+*/
+bool inputAvailable() {
+  struct timeval tv{1, uSec*0};
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(STDIN_FILENO, &fds);
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+  return (FD_ISSET(0, &fds));
+}
+
+void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
+	FD_ZERO(&readfds);//Clear the readfds array to 0
+		int maxfd = -1;
+		//For loop finds the maximum subscript for the ready event in the fds array
+		for(int i=0; i<MAXFD_C; i++)	{
+			if(readfds_arr[i] == -1) {
+				continue;
+			}
+			FD_SET(readfds_arr[i],  &readfds);
+			if(readfds_arr[i] > maxfd) {
+				maxfd = readfds_arr[i];
+			}
+		}
+
+		struct timeval tv = {1, 0};
+		//select system call, where we only focus on read events
+		int retval = select(maxfd+1, &readfds, NULL, NULL, &tv);
+		if(retval == -1)	{ //fail
+			perror("Error select()");
+		}
+		else if(retval == 0) { //Timeout, meaning no file descriptor returned
+			//printf("time out\n");
+		}
+		else { //Ready event generation
+			//loop through each readfd, to see if it has something to read from
+			for(int i=0; i < MAXFD_C; ++i)	{
+				if(readfds_arr[i]==-1) {	//If readfds_arr[i]==-1, the event is not ready
+					continue;
+				}//Determine if the event corresponding to the file descriptor is ready
+				if(FD_ISSET(readfds_arr[i], &readfds)) {
+					// //accept if a new client requests a connection
+					char buff[BUFFSIZE]={0};
+					int res = recv(readfds_arr[i], buff, BUFFSIZE, 0);
+					char *token = strtok(buff, "\t"); 
+					string tokens[3];
+					int tokCounter = 0;
+					while (token != NULL) {
+						tokens[tokCounter] = string(token);
+						tokCounter++;
+						token = strtok(NULL, "\t"); 
+					}
+					cout<<"Received Messege: "<<tokens[2]<<endl;
+				}
+			}
+		
+		}
+}
+
 int main() {
-	int sockfd = socket(AF_INET,SOCK_STREAM,0);	
-//	assert(sockfd != -1 );
+	char buff[BUFFSIZE] = {'\0'};
+	int sockfd = connectSock2Port(localhost, S4PORTNO);
 
-	//Set Address Information
-	struct sockaddr_in saddr;
-	memset(&saddr,0,sizeof(saddr));
-	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(7000);
-	saddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	//Link to server
-	int res = connect(sockfd,(struct sockaddr*)&saddr,sizeof(saddr));
-	assert(res != -1);
+
+
 	char firstNewClinetMsg[20]=".client2";
-	sendto(sockfd, firstNewClinetMsg, strlen(firstNewClinetMsg), 0, (struct sockaddr*)&saddr, sizeof(saddr));
-	while(1) {
-		char buff[128];// = "Hello client 4 from client 1";
-		printf("Please Input:");
-		cin.getline(buff,128,'\n');
-		string temp=buff;
-		// fgets(buff,128,stdin);
-		// if(strncmp(buff,"end",3) ==0 )
-		// {
-		// 	break;
-		// }
-		string msgToSendTemp="client2\tclient4\t"+temp;
-		char msgToSend[150];
-		strcpy(msgToSend,msgToSendTemp.c_str());
-		// sendto(sockfd, buff, strlen(buff), 0, (struct sockaddr*)&saddr, sizeof(saddr)); 
-		send(sockfd,msgToSend,strlen(msgToSend),0);
-		memset(msgToSend,0,128);
-		// sleep(100);
-		// while(1){
+	sendto(sockfd, firstNewClinetMsg, strlen(firstNewClinetMsg), 0, 0, 0);
+	
+	fd_set readfds_set;
+	//Define fds array
+	int readfds_arr[MAXFD_C];
+	for(int i=0; i<MAXFD_C; ++i) {
+		readfds_arr[i]  = -1;
+	}
+	//Add a file descriptor to the fds array
+  fds_init(readfds_arr,  sockfd);
 
-		// }
-		//recv(sockfd,buff,127,0);
-		// printf("RecvBuff:%s\n",buff);
-    // printf("\n");
+	while(1) {
+		while (!inputAvailable()) {
+      readfunc(readfds_arr, readfds_set, sockfd);
+      //sleep(1);
+    }
+		read(STDIN_FILENO, buff, sizeof(buff));
+		string str = buff;
+		str = "client2\tclient4\t" + string(buff);
+		send(sockfd, str.c_str(), str.length(), 0);
+		memset(buff,0,BUFFSIZE);
 	}
 	close(sockfd);
 }

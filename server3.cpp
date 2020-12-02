@@ -141,7 +141,7 @@ int main() {
 										continue;
 									}
 									if(rt[it1].cName == tokArr[1]) {
-										send(rt[it1].nextFD,buff,sizeof(buff),0);
+										send(rt[it1].nextFD, buff, sizeof(buff),0);
 									}
 								}
 							}

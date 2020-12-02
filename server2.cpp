@@ -83,7 +83,6 @@ int main() {
 							close(readfds_arr[i]);
 							for(int it1=0; it1<rtCounter; it1++){
 								if(rt[it1].cPortNo == cPortArr[readfds_arr[i]].portNo){
-									//xxxxxxxxxxxxxxxxxxxxxxxxxxx can be simplified xxxxxxxxxxxxxxxxxxxxx
 									string delMsg = "--	" + to_string(rt[it1].cPortNo);
 									char todelete[delMsg.size()+1];
 									strcpy(todelete, delMsg.c_str());
