@@ -1,5 +1,9 @@
+#ifndef LIBRARIES_H
+#define LIBRARIES_H
+
 //all required libraries
 #include<stdio.h>
+#include<cstdlib>
 #include<stdlib.h>
 #include<unistd.h>
 #include<arpa/inet.h>
@@ -10,34 +14,16 @@
 
 #include <string>
 #include <iostream>
-#include <functional>
 
 #define localhost "127.0.0.1"
-#define MSPORTNO 7000
-#define backlog 3
+//assigned port numbers
+#define S1PORTNO 6000 //server1 portno
+#define S2PORTNO 7000 //server2 portno
+#define S3PORTNO 10000 //server3(main server)
+#define S4PORTNO 8000 //server4 
+
+#define backlog 5
 #define MAXFD 10	//Size of fds array
 #define BUFFSIZE 127
 
-
-//Add a file descriptor to the fds array
-void fds_init(int fds_arr[],int fd) {
-	for(int i=0; i<MAXFD; ++i) {
-		if(fds_arr[i]==-1) {
-			fds_arr[i]=fd;
-			break;
-		}
-	}
-}
-
-void checkError(const int& ret, const char* s) {
-	if(ret == -1) {
-		perror(s);
-		exit(-1);
-	}
-}
-int acceptClient(int sockfd) {
-	struct sockaddr_in caddr;
-	socklen_t len=sizeof(caddr);
-	//Accept new client connections
-	return accept(sockfd,(struct sockaddr *)&caddr, &len);
-}
+#endif
