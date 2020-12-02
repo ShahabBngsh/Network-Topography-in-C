@@ -5,7 +5,7 @@
 using namespace std;
 
 //#define MAXFD 6	//Size of fds array
-#define PORTNO 6000
+#define PORTNO 7000
 #define backlog 3
 #define localhost "127.0.0.1"
 #define BUFFSIZE 127
@@ -240,14 +240,13 @@ int main() {
 								routingTable[routingTableCount].next_serverName.replace(0,5,str2);
 								routingTable[routingTableCount].next_toGoFD=readfds_arr[i];
 								// routingTable[routingTableCount].display();
-								string tosend="-	"+routingTable[routingTableCount].clientName+"	"+to_string(routingTable[routingTableCount].client_PortNo)+"	server1";
+								string tosend="-	"+routingTable[routingTableCount].clientName+"	"+to_string(routingTable[routingTableCount].client_PortNo)+"	server2";
 								// char msg[tosend.size()+1]="-	usama	12345	server1";
 								char msg[tosend.size()+1];
 								strcpy(msg,tosend.c_str());
 								send(forServer3sockfd,msg,sizeof(msg),0);	
 								routingTableCount++;								
 								displayRoutingTable(routingTable,routingTableCount);
-
 								}
 								else{
 									printf("client msg: %s\n",buff);									
@@ -294,7 +293,6 @@ int main() {
 
 							}
 							else{
-								// printf("client msg: %s\n",buff);
 								// printf("client msg: %s\n",buff);
 								char buffTemp[BUFFSIZE];
 								strcpy(buffTemp,buff);
