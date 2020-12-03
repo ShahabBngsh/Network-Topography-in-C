@@ -3,20 +3,35 @@
 using namespace std;
 
 
-/*THANKS to jwhitlock from
-https://stackoverflow.com/questions/717572/how-do-you-do-non-blocking-console-i-o-on-linux-in-c
-*/
-bool inputAvailable() {
-  struct timeval tv{1, uSec*0};
-  fd_set fds;
-  FD_ZERO(&fds);
-  FD_SET(STDIN_FILENO, &fds);
-  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
-  return (FD_ISSET(0, &fds));
+void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
+	
 }
 
-void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
-	FD_ZERO(&readfds);//Clear the readfds array to 0
+
+
+int main() {
+
+	// string str = checkWebsite("websites.txt", "www.reddit.com");
+	// cout << str << endl;
+
+	char buff[BUFFSIZE] = {'\0'};
+	int sockfd_s4 = connectSock2Port(localhost, S4PORTNO);
+
+	char firstNewClinetMsg[20]=".dns";
+	sendto(sockfd_s4, firstNewClinetMsg, strlen(firstNewClinetMsg), 0, 0, 0);
+	
+	fd_set readfds;
+	//Define fds array
+	int readfds_arr[MAXFD_C];
+	for(int i=0; i<MAXFD_C; ++i) {
+		readfds_arr[i]  = -1;
+	}
+	//Add a file descriptor to the fds array
+  fds_init(readfds_arr,  sockfd_s4);
+
+	while(1) {
+		
+		FD_ZERO(&readfds);//Clear the readfds array to 0
 		int maxfd = -1;
 		//For loop finds the maximum subscript for the ready event in the fds array
 		for(int i=0; i<MAXFD_C; i++)	{
@@ -70,44 +85,8 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
 					//cout << tokens[0] << "> " << tokens[2] << endl;
 				}
 			}
-		
 		}
-}
-
-
-
-int main() {
-
-	// string str = checkWebsite("websites.txt", "www.reddit.com");
-	// cout << str << endl;
-
-	char buff[BUFFSIZE] = {'\0'};
-	int sockfd_s4 = connectSock2Port(localhost, S4PORTNO);
-
-	char firstNewClinetMsg[20]=".dns";
-	sendto(sockfd_s4, firstNewClinetMsg, strlen(firstNewClinetMsg), 0, 0, 0);
-	
-	fd_set readfds_set;
-	//Define fds array
-	int readfds_arr[MAXFD_C];
-	for(int i=0; i<MAXFD_C; ++i) {
-		readfds_arr[i]  = -1;
-	}
-	//Add a file descriptor to the fds array
-  fds_init(readfds_arr,  sockfd_s4);
-
-	while(1) {
-
-		while (!inputAvailable()) {
-      readfunc(readfds_arr, readfds_set, sockfd_s4);
-      //sleep(1);
-    }
-		read(STDIN_FILENO, buff, sizeof(buff));
-		string str = buff;
-		str = "c4\tc2\t" + string(buff);
-		send(sockfd_s4, str.c_str(), str.length(), 0);
-		memset(buff, 0, BUFFSIZE);
-
+		
 	}
 	close(sockfd_s4);
 }
