@@ -2,6 +2,7 @@
 #include "RoutingTable.h"
 using namespace std;
 
+
 /*THANKS to jwhitlock from
 https://stackoverflow.com/questions/717572/how-do-you-do-non-blocking-console-i-o-on-linux-in-c
 */
@@ -55,14 +56,31 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
 						tokCounter++;
 						token = strtok(NULL, "\t"); 
 					}
-					cout<<"Received Messege: "<<tokens[2]<<endl;
+					//remove extra char from tokens[2] at the end. 
+					string webName = tokens[2].substr(0, tokens[2].length()-1);
+					string segment = "dns\t" + tokens[0] + "\t"; //construct data segment for reply
+					string ip = checkWebsite("websites.txt", webName);
+					if (ip == "") {//if ip not found it'll return empty string
+						segment += "Error 404: website not found";
+						send(sockfd_s4, segment.c_str(), segment.length(), 0);
+					} else {
+						segment += ip;
+						send(sockfd_s4, segment.c_str(), segment.length(), 0);
+					}
+					//cout << tokens[0] << "> " << tokens[2] << endl;
 				}
 			}
 		
 		}
 }
 
+
+
 int main() {
+
+	// string str = checkWebsite("websites.txt", "www.reddit.com");
+	// cout << str << endl;
+
 	char buff[BUFFSIZE] = {'\0'};
 	int sockfd_s4 = connectSock2Port(localhost, S4PORTNO);
 

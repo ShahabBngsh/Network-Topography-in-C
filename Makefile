@@ -1,11 +1,12 @@
 
 all: servers clients
 
-servers: server1.cpp server2.cpp server3.cpp server4.cpp
+servers: server1.cpp server2.cpp server3.cpp server4.cpp DNS_Server.cpp
 	g++ server1.cpp -o s1
 	g++ server2.cpp -o s2
 	g++ server3.cpp -o s3
 	g++ server4.cpp -o s4
+	g++ DNS_Server.cpp -o dns
 
 clients: client1.cpp client2.cpp client4.cpp
 	g++ client1.cpp -o c1

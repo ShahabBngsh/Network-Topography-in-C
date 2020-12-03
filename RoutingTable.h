@@ -91,3 +91,31 @@ int connectSock2Port(const char* ip, const int& portNo) {
   return sockfd;
 }
 
+string checkWebsite(const string& filename, const string& website) {
+	string line = "", web, ip;
+	bool found = false;
+	ifstream file(filename);
+
+	if (file.is_open()) {
+		while( getline(file, line)) {
+			line += '\n';
+			stringstream ss(line);
+			getline(ss, web, ' ');
+			if (web == website)	{
+				getline(ss, ip, '\n');
+				found = true;
+				break;
+			}
+		}
+		file.close();
+		if(found) {
+			return ip;
+		} else {
+			return "";
+		}
+	} else {
+		cout << "file not found\n";
+		return "";
+	}
+}
+
