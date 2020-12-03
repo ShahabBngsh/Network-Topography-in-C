@@ -57,7 +57,7 @@ int main() {
 			perror("Error select()");
 		}
 		else if(retval == 0) { //Timeout, meaning no file descriptor returned
-			printf("time out\n");
+			//printf("time out\n");
 		}
 		else { //Ready event generation
 			//loop through each readfd, to see if it has something to read from
@@ -89,7 +89,7 @@ int main() {
 						if(res <= 0) {
 							close(readfds_arr[i]);
 							readfds_arr[i] = -1;
-							printf("client disconnected!\n");
+							printf("Server %d down!!\n", i);
 						} else {
 							if(buff[0]=='-' && buff[1] == '\t') {
 								char *token = strtok(buff, "\t"); 

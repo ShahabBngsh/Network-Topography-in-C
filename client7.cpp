@@ -78,7 +78,9 @@ int main() {
 	}
 	//Add a file descriptor to the fds array
   fds_init(readfds_arr,  sockfd);
-
+	system("clear");
+	cout<< " ==> message syntax <=="
+			<< "destClientName + tab + your message\n";
 	while(1) {
 
 		while (!inputAvailable()) {

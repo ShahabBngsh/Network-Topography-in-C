@@ -1,1 +1,2 @@
 www.google.com 8.8.8.8
+www.linux.org 1.1.1.1

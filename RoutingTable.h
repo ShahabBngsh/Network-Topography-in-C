@@ -44,9 +44,13 @@ void dispChar(const char& start, const char& middle, const char& end, const int&
 	
 }
 void dispRT(RTRow* rt, int RTcounter){
+	system("clear");
 	int n = 47;
-	dispChar('+', '_', '+', n);
+	cout<<"\033[36;1m";
+	dispChar('+', '-', '+', n);
 	cout << "\n|cName\tClientPortNo\tNextServerName\tNextFD  |\n";
+	dispChar('+', '-', '+', n);
+	cout << "\033[0m\033[34;1m" << endl;
 	int counter = 0;
 	for(int it1 = 0; it1 < RTcounter; it1++) {
 		if(rt[it1].cPortNo!=0){
@@ -55,7 +59,7 @@ void dispRT(RTRow* rt, int RTcounter){
 		}
 	}
 	dispChar('+', '-', '+', n);
-	cout << endl;
+	cout << "\033[0m" << endl;
 }
 
 struct cPort{

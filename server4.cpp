@@ -48,7 +48,7 @@ int main() {
 			perror("Error select()");
 		}
 		else if(retval == 0) { //Timeout, meaning no file descriptor returned
-			printf("time out\n");
+			//printf("time out\n");
 		}
 		else { //Ready event generation
 			//loop through each readfd, to see if it has something to read from
@@ -120,7 +120,7 @@ int main() {
 									dispRT(rt,rtCounter);
 								}
 								else{
-									printf("client msg: %s\n",buff);									
+									//printf("client msg: %s\n",buff);									
 								}
 								//when other server wants to tell  that it have new client
 							} else if(buff[0]=='-' && buff[1] == '\t') {
