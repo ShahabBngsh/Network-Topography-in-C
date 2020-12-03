@@ -127,3 +127,13 @@ string checkWebsite(const string& filename, const string& website) {
 	}
 }
 
+void writeWebsite(const string& filename, const string& websiteData){
+		ofstream file(filename,ios::app);
+		if(file.is_open()){
+			file<<websiteData<<endl;
+		}
+		else{
+			cout<<"File not open\n";
+		}
+}
+

@@ -2,6 +2,12 @@
 #include "RoutingTable.h"
 using namespace std;
 
+struct DNS_Info{
+	string URL="";
+	string receiver_client="";
+	bool slotBooked=false;
+};
+
 void addWebsite(const string& filename, const string& line) {
 	ofstream outfile;
 	//append to the file, instead of overwrite
@@ -10,6 +16,8 @@ void addWebsite(const string& filename, const string& line) {
 }
 
 int main() {
+	DNS_Info dns_array[7];
+	int dns_counter=0;
 	RTRow rt[10];
 	int rtCounter=0;
 	int server1FD = -1, server2FD = -1, server4FD = -1;
@@ -83,7 +91,7 @@ int main() {
 							readfds_arr[i] = -1;
 							printf("client disconnected!\n");
 						} else {
-              if(buff[0]=='-' && buff[1] == '\t') {
+							if(buff[0]=='-' && buff[1] == '\t') {
 								char *token = strtok(buff, "\t"); 
 								string tokArr[4];
 								int tokArrCount = 0;
@@ -108,7 +116,7 @@ int main() {
 								}
 								rtCounter++;
 								dispRT(rt, rtCounter);
-              } else if(buff[0] == '-' && buff[1] == '-') {
+			                } else if(buff[0] == '-' && buff[1] == '-') {
 								for(int it1 = 0; it1 < MAXFD; it1++) {
 									if(it1 == i || readfds_arr[it1] == -1 || readfds_arr[it1] == reqListenFD) {
 										continue;
@@ -143,14 +151,56 @@ int main() {
 									tokArrCount++;
 									token = strtok(NULL, "\t"); 
 								}	
+								if(tokArr[0]=="dns"){
+									for(int it2=0;it2<7;it2++){
+										if(dns_array[it2].slotBooked==false){
+											continue;
+										}
+										if(dns_array[it2].receiver_client==tokArr[1]){
+											string webName = dns_array[it2].URL.substr(0, dns_array[it2].URL.length()-1);									
+											string toWriteInProxyDNS=webName+" "+tokArr[2];
+											if(tokArr[2] != "Error 404: website not found"){;
+												writeWebsite("proxy.txt",toWriteInProxyDNS);
+											}
+											dns_array[it2].URL.replace(0,dns_array[it2].URL.size(),"");
+											dns_array[it2].receiver_client.replace(0,dns_array[it2].receiver_client.size(),"");
+											dns_array[it2].slotBooked=false;
+											break;
+										}
+									}
+								}								
 								for(int it1 = 0; it1 < rtCounter; it1++) {
 									if(rt[it1].cPortNo == 0) {
 										continue;
 									}
 									if(rt[it1].cName == tokArr[1]) {
-										send(rt[it1].nextFD, buff, sizeof(buff),0);
+										if(rt[it1].cName=="dns"){
+										string webName = tokArr[2].substr(0, tokArr[2].length()-1);
+										string ip = checkWebsite("proxy.txt", webName);
+											if(ip==""){
+												for(int it2=0;it2<7;it2++){
+													if(dns_array[dns_counter].slotBooked==true){
+														continue;
+													}
+													dns_array[it2].URL.replace(0,tokArr[2].size()-1,tokArr[2]);
+													dns_array[it2].receiver_client.replace(0,tokArr[0].size()-1,tokArr[0]);
+													dns_array[it2].slotBooked=true;
+													send(rt[it1].nextFD, buff, sizeof(buff),0);
+													break;
+												}
+											}
+											else{
+												string toSendIp="proxy "+tokArr[1]+"\t"+tokArr[0]+"\t"+ip;
+												char ipReply[127];
+												strcpy(ipReply,toSendIp.c_str());
+												send(readfds_arr[i],ipReply,sizeof(ipReply),0);
+											}
+										}
+										else{
+											send(rt[it1].nextFD, buff, sizeof(buff),0);
+										}
 									}
-								}
+								}								
 							}
 
 						}
