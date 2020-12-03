@@ -112,7 +112,7 @@ int main() {
 									// rt[rtCounter].display();
 									//info coming from server about new client
 									string tosend = "-	" + rt[rtCounter].cName + "	" 
-															+ to_string(rt[rtCounter].cPortNo) + "	server1";
+															+ to_string(rt[rtCounter].cPortNo) + "	server2";
 									// char msg[tosend.size()+1]="-	usama	12345	server1";
 									char msg[tosend.size()+1];
 									strcpy(msg, tosend.c_str());
