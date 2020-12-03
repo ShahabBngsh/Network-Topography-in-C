@@ -14,7 +14,7 @@ bool inputAvailable() {
   return (FD_ISSET(0, &fds));
 }
 
-void readfunc(int readfds_arr[], fd_set readfds, int sockfd){
+void readfunc(int readfds_arr[], fd_set readfds, int sockfd_s4){
 	FD_ZERO(&readfds);//Clear the readfds array to 0
 		int maxfd = -1;
 		//For loop finds the maximum subscript for the ready event in the fds array
@@ -64,12 +64,13 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd){
 
 int main() {
 	char buff[BUFFSIZE] = {'\0'};
-	string cName = ".c4";
+	string cName = ".c3";
+
 	int sockfd = connectSock2Port(localhost, S2PORTNO);
 
 	string firstMsg = cName;
 	sendto(sockfd, firstMsg.c_str(), firstMsg.length(), 0, 0, 0);
-	
+
 	fd_set readfds_set;
 	//Define fds array
 	int readfds_arr[MAXFD_C];
@@ -80,7 +81,6 @@ int main() {
   fds_init(readfds_arr,  sockfd);
 
 	while(1) {
-
 		while (!inputAvailable()) {
       readfunc(readfds_arr, readfds_set, sockfd);
       //sleep(1);
@@ -90,7 +90,6 @@ int main() {
 		str += '\t' + string(buff);
 		send(sockfd, str.c_str(), str.length(), 0);
 		memset(buff, 0, BUFFSIZE);
-
 	}
 	close(sockfd);
 }

@@ -2,6 +2,13 @@
 #include "RoutingTable.h"
 using namespace std;
 
+void addWebsite(const string& filename, const string& line) {
+	ofstream outfile;
+	//append to the file, instead of overwrite
+  outfile.open(filename, std::ios_base::app);
+  outfile << line; 
+}
+
 int main() {
 	RTRow rt[10];
 	int rtCounter=0;
@@ -124,7 +131,7 @@ int main() {
 										break;
 									}
 								}
-								dispRT(rt,rtCounter);
+								dispRT(rt, rtCounter);
 							} else {
 								char buffTemp[BUFFSIZE];
 								strcpy(buffTemp,buff);

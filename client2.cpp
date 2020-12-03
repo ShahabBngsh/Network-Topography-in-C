@@ -66,7 +66,7 @@ int main() {
 	char buff[BUFFSIZE] = {'\0'};
 	string cName = ".c2";
 
-	int sockfd = connectSock2Port(localhost, S2PORTNO);
+	int sockfd = connectSock2Port(localhost, S1PORTNO);
 
 	string firstMsg = cName;
 	sendto(sockfd, firstMsg.c_str(), firstMsg.length(), 0, 0, 0);

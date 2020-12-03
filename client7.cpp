@@ -64,8 +64,8 @@ void readfunc(int readfds_arr[], fd_set readfds, int sockfd){
 
 int main() {
 	char buff[BUFFSIZE] = {'\0'};
-	string cName = ".c4";
-	int sockfd = connectSock2Port(localhost, S2PORTNO);
+	string cName = ".c7";
+	int sockfd = connectSock2Port(localhost, S4PORTNO);
 
 	string firstMsg = cName;
 	sendto(sockfd, firstMsg.c_str(), firstMsg.length(), 0, 0, 0);

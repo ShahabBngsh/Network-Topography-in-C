@@ -14,6 +14,8 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <bits/stdc++.h> 
 
 #define localhost "127.0.0.1"
 //assigned port numbers
