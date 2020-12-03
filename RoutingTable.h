@@ -30,24 +30,32 @@ struct RTRow {
 	int nextFD = -1;
 	string nextSName = "";
 
-	void display()const{
-		cout<< "cName: " << cName << "  Clinet_PortNo: " << cPortNo 
-				<< "  NextServerName :" << nextSName << "  Next_toGoFd: "
-				<< nextFD << endl;
+	void display(const char& start, const char& end)const{
+		cout << "|" << cName << "\t " << cPortNo << "\t\t" 
+		<< nextSName << "\t\t" << nextFD << "\t|" << endl;
 	}
 };
-
+void dispChar(const char& start, const char& middle, const char& end, const int& n) {
+	cout << start;
+	for (int i = 0; i < n; i++) {
+		cout << middle ;
+	}
+	cout << end;
+	
+}
 void dispRT(RTRow* rt, int RTcounter){
-	// system("clear");
-	cout<<"***********************************************************\n";
+	int n = 47;
+	dispChar('+', '_', '+', n);
+	cout << "\n|cName\tClientPortNo\tNextServerName\tNextFD  |\n";
 	int counter = 0;
 	for(int it1 = 0; it1 < RTcounter; it1++) {
 		if(rt[it1].cPortNo!=0){
 			counter++;
-			rt[it1].display();
+			rt[it1].display('+', '+');
 		}
 	}
-	cout<<"***********************************************************\n";
+	dispChar('+', '-', '+', n);
+	cout << endl;
 }
 
 struct cPort{
